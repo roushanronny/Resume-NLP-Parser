@@ -86,9 +86,8 @@ In the pipeline for this project are several enhancements:
 - **Customization Features**: Offer customization options for tailoring parsing algorithms to specific job roles or industries.
 - **Database Integration and Management**: Implement a more robust database system for long-term storage and efficient data retrieval.
 
-## Team
 
-- **Prince Kumar**(106121096)
-- **Roushan Kumar**:(106121108)
+
+
 
 
