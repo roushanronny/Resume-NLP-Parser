@@ -1,3 +1,0 @@
-# System packages (apt packages) - Leave empty if no system packages needed
-# This file is for Linux system packages, not Python packages
-# Python packages go in requirements.txt
