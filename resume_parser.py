@@ -9,8 +9,15 @@ import nltk
 # Additional libraries
 nltk.download('punkt')
 
-# Load the spaCy model for English
-nlp = spacy.load('en_core_web_sm')
+# Load the spaCy model for English with error handling
+try:
+    nlp = spacy.load('en_core_web_sm')
+except OSError:
+    # If model not found, download it
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
+    nlp = spacy.load('en_core_web_sm')
 
 def load_keywords(file_path):
     try:
