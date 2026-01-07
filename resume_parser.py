@@ -25,23 +25,85 @@ if sys.version_info >= (3, 12):
 import re
 import fitz
 import base64
-import streamlit as st
-import spacy
 import csv
-import nltk
+import os
 
-# Additional libraries
-nltk.download('punkt')
-
-# Load the spaCy model for English with error handling
+# Lazy import streamlit (only when needed, not at module level)
 try:
-    nlp = spacy.load('en_core_web_sm')
-except OSError:
-    # If model not found, download it
-    import subprocess
-    import sys
-    subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
-    nlp = spacy.load('en_core_web_sm')
+    import streamlit as st
+except ImportError:
+    st = None
+
+# Lazy import spacy and nltk
+spacy = None
+nltk = None
+
+def _ensure_nltk_data():
+    """Ensure NLTK punkt tokenizer is available"""
+    global nltk
+    if nltk is None:
+        try:
+            import nltk
+            try:
+                nltk.data.find('tokenizers/punkt')
+            except LookupError:
+                # Download punkt if not found
+                nltk.download('punkt', quiet=True)
+        except Exception:
+            pass  # Silently fail if nltk not available
+
+def _ensure_spacy_model():
+    """Ensure spaCy model is loaded"""
+    global spacy, nlp
+    if spacy is None:
+        try:
+            import spacy
+        except ImportError:
+            return None
+    
+    try:
+        return spacy.load('en_core_web_sm')
+    except OSError:
+        # Model not found - try to download
+        try:
+            import subprocess
+            import sys
+            # Use spacy's built-in download mechanism
+            # Don't suppress output on Streamlit Cloud to see errors
+            result = subprocess.run(
+                [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 minute timeout
+            )
+            if result.returncode == 0:
+                return spacy.load('en_core_web_sm')
+            else:
+                # Log error if st is available
+                if st:
+                    st.warning(f"Could not download spaCy model: {result.stderr}")
+                return None
+        except subprocess.TimeoutExpired:
+            if st:
+                st.error("SpaCy model download timed out. Please try again.")
+            return None
+        except Exception as e:
+            # If download fails, return None - functions will handle gracefully
+            if st:
+                st.warning(f"Could not load spaCy model: {e}")
+            return None
+
+# Lazy load models (not at import time)
+nlp = None
+
+def get_nlp():
+    """Get spaCy nlp model, loading it if necessary"""
+    global nlp
+    if nlp is None:
+        nlp = _ensure_spacy_model()
+        if nlp is None:
+            raise RuntimeError("Could not load spaCy model. Please ensure en_core_web_sm is installed.")
+    return nlp
 
 def load_keywords(file_path):
     try:
@@ -56,7 +118,8 @@ def load_keywords(file_path):
                         keywords.add(keyword)
             return keywords
     except Exception as e:
-        st.warning(f"Error loading keywords from {file_path}: {e}")
+        if st:
+            st.warning(f"Error loading keywords from {file_path}: {e}")
         return set()
 
 # ----------------------------------Extract Name----------------------------------
@@ -67,7 +130,7 @@ def extract_name(doc):
         processed_doc = doc
     else:
         text = str(doc)
-        processed_doc = nlp(text)
+        processed_doc = get_nlp()(text)
     
     # Organization/institute keywords to exclude
     org_keywords = ['national', 'institute', 'technology', 'university', 'college', 'school', 
@@ -204,7 +267,7 @@ def extract_education_from_resume(doc):
         processed_doc = doc
     else:
         # It's text, need to process
-        processed_doc = nlp(str(doc))
+        processed_doc = get_nlp()(str(doc))
 
     # Iterate through entities and check for organizations (universities)
     for entity in processed_doc.ents:
@@ -605,7 +668,7 @@ def extract_resume_info_from_pdf(uploaded_file):
     for page_num in range(doc.page_count):
         page = doc[page_num]
         text += page.get_text()
-    return nlp(text)
+    return get_nlp()(text)
 
 
 def show_colored_skills(skills):
