@@ -4,8 +4,20 @@ from spacy.matcher import Matcher
 import csv
 import fitz  # PyMuPDF
 
-# Load the SpaCy model
-nlp = spacy.load('en_core_web_sm')
+# Load the SpaCy model with error handling
+try:
+    nlp = spacy.load('en_core_web_sm')
+except OSError:
+    # If model not found, try to download it
+    import subprocess
+    import sys
+    try:
+        subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"], 
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        nlp = spacy.load('en_core_web_sm')
+    except:
+        st.error("Could not load spaCy model. Please ensure en_core_web_sm is installed.")
+        st.stop()
 
 def process_recruiters_mode():
     # Modern header

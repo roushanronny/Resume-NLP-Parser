@@ -232,15 +232,31 @@ def csv_skills(doc):
             st.warning(f"Error loading skills from CSV: {e}")
         return set()
 
-# Load NER model with error handling
-try:
-    nlp_skills = spacy.load('TrainedModel/skills')
-except Exception as e:
-    nlp_skills = None
-    st.warning(f"Could not load NER model: {e}. Using CSV skills only.")
+# Load NER model with error handling (lazy loading to avoid import-time errors)
+_nlp_skills_cache = None
+_nlp_skills_load_attempted = False
+
+def get_nlp_skills_model():
+    """Lazy load NER model to avoid import-time errors"""
+    global _nlp_skills_cache, _nlp_skills_load_attempted
+    
+    if _nlp_skills_load_attempted:
+        return _nlp_skills_cache if _nlp_skills_cache else None
+    
+    _nlp_skills_load_attempted = True
+    
+    try:
+        _nlp_skills_cache = spacy.load('TrainedModel/skills')
+        return _nlp_skills_cache
+    except Exception as e:
+        # Silently fail - will use CSV skills only
+        _nlp_skills_cache = None
+        # Don't show warning at import time, only when actually used
+        return None
 
 def extract_skills_from_ner(doc):
-    if nlp_skills is None:
+    nlp_skills_model = get_nlp_skills_model()
+    if nlp_skills_model is None:
         return set()
     
     non_skill_labels = {'DATE', 'TIME', 'PERCENT', 'MONEY', 'QUANTITY', 'ORDINAL', 'CARDINAL', 'EMAIL'}
@@ -255,7 +271,7 @@ def extract_skills_from_ner(doc):
         text = str(doc)
     
     try:
-        for ent in nlp_skills(text).ents:
+        for ent in nlp_skills_model(text).ents:
             if ent.label_ == 'SKILL':
                 skill_text = ent.text.strip()
                 skill_lower = skill_text.lower()

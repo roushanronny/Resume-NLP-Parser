@@ -12,10 +12,16 @@ if sys.version_info >= (3, 12):
     ForwardRef._evaluate = _patched_evaluate
 
 import streamlit as st
-from modules.users import process_user_mode
-from modules.recruiters import process_recruiters_mode
-from modules.admin import process_admin_mode
-from modules.feedback import process_feedback_mode
+
+# Import modules with error handling
+try:
+    from modules.users import process_user_mode
+    from modules.recruiters import process_recruiters_mode
+    from modules.admin import process_admin_mode
+    from modules.feedback import process_feedback_mode
+except Exception as e:
+    st.error(f"Error importing modules: {e}")
+    st.stop()
 
 # Custom CSS for modern UI
 def load_custom_css():
