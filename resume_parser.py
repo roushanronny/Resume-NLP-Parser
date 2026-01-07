@@ -116,7 +116,11 @@ def get_nlp():
     if nlp is None:
         nlp = _ensure_spacy_model()
         if nlp is None:
-            raise RuntimeError("Could not load spaCy model. Please ensure en_core_web_sm is installed.")
+            # Don't raise error, return None and let functions handle gracefully
+            # This allows the app to start even if model isn't loaded
+            if st:
+                st.warning("⚠️ Could not load spaCy model. Some features may not work. Please ensure en_core_web_sm is installed.")
+            return None
     return nlp
 
 def load_keywords(file_path):
@@ -139,12 +143,16 @@ def load_keywords(file_path):
 # ----------------------------------Extract Name----------------------------------
 def extract_name(doc):
     # Get text from doc object
+    nlp_model = get_nlp()
+    if nlp_model is None:
+        return "Model not available"
+    
     if hasattr(doc, 'text'):
         text = doc.text
         processed_doc = doc
     else:
         text = str(doc)
-        processed_doc = get_nlp()(text)
+        processed_doc = nlp_model(text)
     
     # Organization/institute keywords to exclude
     org_keywords = ['national', 'institute', 'technology', 'university', 'college', 'school', 
@@ -244,13 +252,21 @@ def extract_name(doc):
 
 # ----------------------------------Extract Email---------------------------------
 def extract_email(doc):
-    matcher = spacy.matcher.Matcher(nlp.vocab)
+    nlp_model = get_nlp()
+    if nlp_model is None:
+        # Fallback to regex if model not available
+        text = doc.text if hasattr(doc, 'text') else str(doc)
+        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        match = re.search(email_pattern, text)
+        return match.group() if match else ""
+    
+    matcher = spacy.matcher.Matcher(nlp_model.vocab)
     email_pattern = [{'LIKE_EMAIL': True}]
     matcher.add('EMAIL', [email_pattern])
 
     matches = matcher(doc)
     for match_id, start, end in matches:
-        if match_id == nlp.vocab.strings['EMAIL']:
+        if match_id == nlp_model.vocab.strings['EMAIL']:
             return doc[start:end].text
     return ""
 # --------------------------------------------------------------------------------
