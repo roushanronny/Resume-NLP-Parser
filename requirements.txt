@@ -12,6 +12,3 @@ PyMuPDF>=1.23.7
 # Data processing
 pandas>=2.1.3
 numpy>=1.26.2
-
-# System dependencies (for lxml compilation)
-# Note: libxml2-dev and libxslt1-dev should be in packages.txt

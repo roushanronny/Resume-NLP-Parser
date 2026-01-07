@@ -1,23 +1,72 @@
+# Python 3.12+ compatibility patch for pydantic v1 (must be before spacy import)
+import sys
+if sys.version_info >= (3, 12):
+    from typing import ForwardRef
+    _original_evaluate = ForwardRef._evaluate
+    
+    def _patched_evaluate(self, globalns=None, localns=None, frozenset=None, type_params=None, **kwargs):
+        # Handle Python 3.13+ signature with type_params
+        if 'type_params' in kwargs and type_params is not None:
+            kwargs.pop('type_params', None)
+        elif 'type_params' not in kwargs and type_params is None:
+            type_params = ()
+        if 'recursive_guard' not in kwargs:
+            kwargs['recursive_guard'] = set()
+        try:
+            return _original_evaluate(self, globalns, localns, frozenset or set(), type_params=type_params, **kwargs)
+        except TypeError:
+            try:
+                return _original_evaluate(self, globalns, localns, frozenset or set(), **kwargs)
+            except TypeError:
+                return _original_evaluate(self, globalns, localns, **kwargs)
+    
+    ForwardRef._evaluate = _patched_evaluate
+
 import streamlit as st
-import spacy
-from spacy.matcher import Matcher
 import csv
 import fitz  # PyMuPDF
 
-# Load the SpaCy model with error handling
-try:
-    nlp = spacy.load('en_core_web_sm')
-except OSError:
-    # If model not found, try to download it
-    import subprocess
-    import sys
-    try:
-        subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"], 
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        nlp = spacy.load('en_core_web_sm')
-    except:
-        st.error("Could not load spaCy model. Please ensure en_core_web_sm is installed.")
-        st.stop()
+# Lazy import spacy (not at module level)
+spacy = None
+Matcher = None
+nlp = None
+
+def get_nlp():
+    """Lazy load spaCy model"""
+    global spacy, Matcher, nlp
+    
+    if spacy is None:
+        try:
+            import spacy
+            from spacy.matcher import Matcher
+        except ImportError:
+            st.error("Could not import spaCy. Please ensure it is installed.")
+            return None
+    
+    if nlp is None:
+        try:
+            nlp = spacy.load('en_core_web_sm')
+        except OSError:
+            # Model not found - try to download it
+            try:
+                import subprocess
+                import sys
+                result = subprocess.run(
+                    [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
+                    capture_output=True,
+                    text=True,
+                    timeout=300
+                )
+                if result.returncode == 0:
+                    nlp = spacy.load('en_core_web_sm')
+                else:
+                    st.warning("⚠️ Could not download spaCy model. Some features may not work.")
+                    return None
+            except Exception as e:
+                st.warning(f"⚠️ Could not load spaCy model: {e}. Some features may not work.")
+                return None
+    
+    return nlp
 
 def process_recruiters_mode():
     # Modern header
@@ -62,11 +111,16 @@ def process_recruiters_mode():
         st.markdown(f"### 📊 Processing {len(uploaded_files)} Resume(s)")
         st.markdown("---")
         
+        nlp_model = get_nlp()
+        if nlp_model is None:
+            st.error("⚠️ Could not load spaCy model. Please ensure en_core_web_sm is installed.")
+            return
+        
         for idx, file in enumerate(uploaded_files, 1):
             with st.expander(f"📄 Resume {idx}: {file.name}", expanded=True):
                 with st.spinner(f"Analyzing {file.name}..."):
                     text = extract_text_from_pdf(file)
-                    doc = nlp(text)
+                    doc = nlp_model(text)
                     candidate_name = extract_candidate_name(doc)
                     display_candidate_info(candidate_name, file.name)
 
@@ -74,7 +128,7 @@ def process_recruiters_mode():
                     display_parsed_skills(parsed_skills)
 
                     if required_skills:
-                        skills_found = extract_skills(doc, required_skills)
+                        skills_found = extract_skills(doc, required_skills, nlp_model)
                         display_skills_found(required_skills, skills_found)
                         all_skills_found.update(skills_found)
         
@@ -116,8 +170,9 @@ def extract_all_skills(doc):
     return all_skills
 
 # Function to extract skills using SpaCy Matcher
-def extract_skills(doc, required_skills):
-    matcher = Matcher(nlp.vocab)
+def extract_skills(doc, required_skills, nlp_model):
+    from spacy.matcher import Matcher
+    matcher = Matcher(nlp_model.vocab)
     skills_found = set()
 
     for skill in required_skills:
