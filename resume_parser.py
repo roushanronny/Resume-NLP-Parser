@@ -1,3 +1,27 @@
+# Python 3.12+ compatibility patch for pydantic v1 (must be before spacy import)
+import sys
+if sys.version_info >= (3, 12):
+    from typing import ForwardRef
+    _original_evaluate = ForwardRef._evaluate
+    
+    def _patched_evaluate(self, globalns=None, localns=None, frozenset=None, type_params=None, **kwargs):
+        # Handle Python 3.13+ signature with type_params
+        if 'type_params' in kwargs and type_params is not None:
+            kwargs.pop('type_params', None)
+        elif 'type_params' not in kwargs and type_params is None:
+            type_params = ()
+        if 'recursive_guard' not in kwargs:
+            kwargs['recursive_guard'] = set()
+        try:
+            return _original_evaluate(self, globalns, localns, frozenset or set(), type_params=type_params, **kwargs)
+        except TypeError:
+            try:
+                return _original_evaluate(self, globalns, localns, frozenset or set(), **kwargs)
+            except TypeError:
+                return _original_evaluate(self, globalns, localns, **kwargs)
+    
+    ForwardRef._evaluate = _patched_evaluate
+
 import re
 import fitz
 import base64

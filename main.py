@@ -1,14 +1,36 @@
 # main.py
-# Python 3.12 compatibility patch for pydantic v1 (must be before any spacy imports)
+# Python 3.12+ compatibility patch for pydantic v1 (must be before any spacy imports)
 import sys
 if sys.version_info >= (3, 12):
     from typing import ForwardRef
     _original_evaluate = ForwardRef._evaluate
-    def _patched_evaluate(self, globalns=None, localns=None, frozenset=None, **kwargs):
-        # Handle both old (without recursive_guard) and new (with recursive_guard) calling conventions
+    
+    def _patched_evaluate(self, globalns=None, localns=None, frozenset=None, type_params=None, **kwargs):
+        # Handle Python 3.13+ signature with type_params
+        # Remove type_params from kwargs if it was passed as positional
+        if 'type_params' in kwargs and type_params is not None:
+            # Both positional and keyword - remove from kwargs
+            kwargs.pop('type_params', None)
+        elif 'type_params' not in kwargs and type_params is None:
+            # Neither provided - set default
+            type_params = ()
+        
+        # Handle recursive_guard for older Python versions
         if 'recursive_guard' not in kwargs:
             kwargs['recursive_guard'] = set()
-        return _original_evaluate(self, globalns, localns, frozenset or set(), **kwargs)
+        
+        # Call original with proper signature
+        try:
+            # Try Python 3.13+ signature first
+            return _original_evaluate(self, globalns, localns, frozenset or set(), type_params=type_params, **kwargs)
+        except TypeError:
+            # Fallback for older signatures
+            try:
+                return _original_evaluate(self, globalns, localns, frozenset or set(), **kwargs)
+            except TypeError:
+                # Last resort - minimal call
+                return _original_evaluate(self, globalns, localns, **kwargs)
+    
     ForwardRef._evaluate = _patched_evaluate
 
 import streamlit as st
