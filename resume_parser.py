@@ -87,20 +87,16 @@ def _ensure_spacy_model():
                     else:
                         raise Exception(f"Subprocess failed: {result.stderr}")
                 except Exception as e2:
-                    # Method 3: Try direct URL download
+                    # Method 3: Try using spacy's link command (creates symlink)
                     try:
-                        import urllib.request
-                        import tarfile
-                        import os
-                        model_url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
-                        model_path = "/tmp/en_core_web_sm.whl"
-                        urllib.request.urlretrieve(model_url, model_path)
-                        subprocess.run([sys.executable, "-m", "pip", "install", model_path], check=True)
+                        from spacy.cli import link
+                        # This creates a symlink to the model without installing as package
+                        link('en_core_web_sm', 'en_core_web_sm', force=True, model_path=None)
                         return spacy.load('en_core_web_sm')
                     except Exception as e3:
-                        # All methods failed
+                        # All methods failed - app will work with limited functionality
                         if st:
-                            st.error(f"Could not download spaCy model. Please contact support. Errors: {e1}, {e2}, {e3}")
+                            st.warning(f"⚠️ Could not download spaCy model. Some NLP features may be limited. Error: {str(e1)[:100]}")
                         return None
         except Exception as e:
             if st:

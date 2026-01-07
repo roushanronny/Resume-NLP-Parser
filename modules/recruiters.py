@@ -47,21 +47,28 @@ def get_nlp():
         try:
             nlp = spacy.load('en_core_web_sm')
         except OSError:
-            # Model not found - try to download it
+            # Model not found - try to download it using spacy.cli
             try:
-                import subprocess
-                import sys
-                result = subprocess.run(
-                    [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
-                    capture_output=True,
-                    text=True,
-                    timeout=300
-                )
-                if result.returncode == 0:
+                # Method 1: Use spacy.cli.download (preferred, doesn't install as package)
+                try:
+                    from spacy.cli import download
+                    download('en_core_web_sm', direct=False)
                     nlp = spacy.load('en_core_web_sm')
-                else:
-                    st.warning("⚠️ Could not download spaCy model. Some features may not work.")
-                    return None
+                except Exception:
+                    # Method 2: Fallback to subprocess
+                    import subprocess
+                    import sys
+                    result = subprocess.run(
+                        [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
+                        capture_output=True,
+                        text=True,
+                        timeout=300
+                    )
+                    if result.returncode == 0:
+                        nlp = spacy.load('en_core_web_sm')
+                    else:
+                        st.warning("⚠️ Could not download spaCy model. Some features may not work.")
+                        return None
             except Exception as e:
                 st.warning(f"⚠️ Could not load spaCy model: {e}. Some features may not work.")
                 return None
