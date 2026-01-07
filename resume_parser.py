@@ -64,33 +64,47 @@ def _ensure_spacy_model():
     try:
         return spacy.load('en_core_web_sm')
     except OSError:
-        # Model not found - try to download
+        # Model not found - try to download using spacy.cli
         try:
-            import subprocess
-            import sys
-            # Use spacy's built-in download mechanism
-            # Don't suppress output on Streamlit Cloud to see errors
-            result = subprocess.run(
-                [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
-                capture_output=True,
-                text=True,
-                timeout=300  # 5 minute timeout
-            )
-            if result.returncode == 0:
+            # Method 1: Use spacy.cli.download (preferred)
+            try:
+                from spacy.cli import download
+                download('en_core_web_sm', direct=False)
                 return spacy.load('en_core_web_sm')
-            else:
-                # Log error if st is available
-                if st:
-                    st.warning(f"Could not download spaCy model: {result.stderr}")
-                return None
-        except subprocess.TimeoutExpired:
-            if st:
-                st.error("SpaCy model download timed out. Please try again.")
-            return None
+            except Exception as e1:
+                # Method 2: Fallback to subprocess
+                try:
+                    import subprocess
+                    import sys
+                    result = subprocess.run(
+                        [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
+                        capture_output=True,
+                        text=True,
+                        timeout=300
+                    )
+                    if result.returncode == 0:
+                        return spacy.load('en_core_web_sm')
+                    else:
+                        raise Exception(f"Subprocess failed: {result.stderr}")
+                except Exception as e2:
+                    # Method 3: Try direct URL download
+                    try:
+                        import urllib.request
+                        import tarfile
+                        import os
+                        model_url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
+                        model_path = "/tmp/en_core_web_sm.whl"
+                        urllib.request.urlretrieve(model_url, model_path)
+                        subprocess.run([sys.executable, "-m", "pip", "install", model_path], check=True)
+                        return spacy.load('en_core_web_sm')
+                    except Exception as e3:
+                        # All methods failed
+                        if st:
+                            st.error(f"Could not download spaCy model. Please contact support. Errors: {e1}, {e2}, {e3}")
+                        return None
         except Exception as e:
-            # If download fails, return None - functions will handle gracefully
             if st:
-                st.warning(f"Could not load spaCy model: {e}")
+                st.error(f"Could not load spaCy model: {e}")
             return None
 
 # Lazy load models (not at import time)
@@ -262,12 +276,16 @@ def extract_education_from_resume(doc):
     universities = []
 
     # Handle both doc object and text string
+    nlp_model = get_nlp()
+    if nlp_model is None:
+        return []
+    
     if hasattr(doc, 'ents'):
         # Already a processed doc
         processed_doc = doc
     else:
         # It's text, need to process
-        processed_doc = get_nlp()(str(doc))
+        processed_doc = nlp_model(str(doc))
 
     # Iterate through entities and check for organizations (universities)
     for entity in processed_doc.ents:
@@ -668,7 +686,15 @@ def extract_resume_info_from_pdf(uploaded_file):
     for page_num in range(doc.page_count):
         page = doc[page_num]
         text += page.get_text()
-    return get_nlp()(text)
+    nlp_model = get_nlp()
+    if nlp_model is None:
+        # Return a mock doc-like object if model not available
+        class MockDoc:
+            def __init__(self, text):
+                self.text = text
+                self.ents = []
+        return MockDoc(text)
+    return nlp_model(text)
 
 
 def show_colored_skills(skills):
