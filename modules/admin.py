@@ -8,7 +8,7 @@ def process_admin_mode():
     st.markdown("""
     <div style="text-align: center; padding: 2rem 0;">
         <h1 style="color: #667eea; font-size: 2.5rem; margin-bottom: 0.5rem;">⚙️ Admin Panel</h1>
-        <p style="color: #666; font-size: 1.2rem;">Manage resumes and feedback</p>
+        <p style="color: #2d3748; font-size: 1.2rem; font-weight: 500;">Manage resumes and feedback</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -115,14 +115,14 @@ def display_uploaded_pdfs():
             pdf_data = get_pdf_data(pdf_id)
             if pdf_data:
                 pdf_b64 = base64.b64encode(pdf_data[1]).decode('utf-8')
-                download_link = f'<a href="data:application/pdf;base64,{pdf_b64}" download="{pdf_name}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; font-weight: 600;">📥 Download</a>'
+                download_link = f'<a href="data:application/pdf;base64,{pdf_b64}" download="{pdf_name}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #f0f4f8; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; font-weight: 600; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s;">📥 Download</a>'
                 
                 st.markdown(f"""
                 <div class="info-card">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; color: #667eea;">📄 {pdf_name}</h4>
-                            <p style="color: #666; margin: 0.5rem 0 0 0;">ID: {pdf_id}</p>
+                            <p style="color: #2d3748; margin: 0.5rem 0 0 0; font-weight: 500;">ID: {pdf_id}</p>
                         </div>
                         <div>{download_link}</div>
                     </div>

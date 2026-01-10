@@ -181,7 +181,7 @@ def extract_name(doc):
     if person_entities:
         names = person_entities[0].text.split()
         if len(names) >= 2:
-            return names[0], ' '.join(names[1:])
+                return names[0], ' '.join(names[1:])
         else:
             return person_entities[0].text, ""
     
@@ -324,7 +324,7 @@ def csv_skills(doc):
         
         # Also check for multi-word skills
         text_lower = text.lower()
-        
+
         for keyword in skills_keywords:
             if not keyword or not keyword.strip():
                 continue

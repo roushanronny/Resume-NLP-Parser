@@ -47,18 +47,12 @@ def process_user_mode():
     </div>
     """, unsafe_allow_html=True)
     
-    # File uploader with better styling
-    st.markdown("""
-    <div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); padding: 2rem; border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15); border: 2px dashed #667eea;">
-        <h3 style="color: #667eea; margin-bottom: 1rem; text-align: center; font-size: 1.5rem;">📄 Upload Your Resume</h3>
-        <p style="text-align: center; color: #666; margin-bottom: 0;">Drag and drop your PDF resume or click to browse</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Single file uploader with drag and drop functionality
     uploaded_file = st.file_uploader(
-        " ", 
+        "📄 Upload Your Resume", 
         type="pdf",
-        help="Upload your resume in PDF format to get started",
-        label_visibility="collapsed"
+        help="Drag and drop your PDF resume or click to browse. Limit 200MB per file.",
+        label_visibility="visible"
     )
 
     if uploaded_file:
@@ -188,10 +182,10 @@ def process_user_mode():
         <div style="background: #f0f0f0; border-radius: 15px; padding: 1rem; margin: 1rem 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                 <span style="font-size: 1.5rem; font-weight: 700; color: {color};">{percentage}%</span>
-                <span style="color: #666;">Out of 100</span>
+                <span style="color: #2d3748; font-weight: 500;">Out of 100</span>
             </div>
             <div style="background: linear-gradient(90deg, {color} {percentage_str}%, #e5e7eb {percentage_str}%); height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative;">
-                <span style="color: {color}; font-weight: 600; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(255,255,255,0.8);">{percentage}% Complete</span>
+                <span style="color: #1a1a2e; font-weight: 700; font-size: 1.1rem; text-shadow: 0 1px 3px rgba(240,244,248,0.8);">{percentage}% Complete</span>
             </div>
         </div>
         """, unsafe_allow_html=True)

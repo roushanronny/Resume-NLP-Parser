@@ -83,7 +83,7 @@ def load_custom_css():
         border: 1px solid rgba(255, 255, 255, 0.18);
         padding: 3rem 2rem;
         border-radius: 20px;
-        color: white;
+        color: #1a1a2e;
         text-align: center;
         margin-bottom: 3rem;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
@@ -102,11 +102,14 @@ def load_custom_css():
     }
     
     .main-header h1 {
-        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-size: 3rem;
         margin: 0;
         font-weight: 800;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-shadow: none;
         letter-spacing: -1px;
     }
     
@@ -152,6 +155,26 @@ def load_custom_css():
         font-size: 1.3rem;
     }
     
+    /* List items in info-card - ensure dark visible colors */
+    .info-card ul, .info-card ol {
+        color: #2d3748;
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+    
+    .info-card li {
+        color: #2d3748;
+        font-size: 1rem;
+        line-height: 1.8;
+        margin: 0.5rem 0;
+        font-weight: 500;
+    }
+    
+    /* All text in info-card should be dark by default */
+    .info-card, .info-card p, .info-card div, .info-card span {
+        color: #2d3748;
+    }
+    
     /* Sidebar styling */
     .css-1d391kg {
         background: rgba(255, 255, 255, 0.1);
@@ -161,7 +184,7 @@ def load_custom_css():
     /* Button styling with animation */
     .stButton>button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: #f0f4f8;
         border: none;
         border-radius: 12px;
         padding: 0.75rem 2.5rem;
@@ -218,7 +241,7 @@ def load_custom_css():
     /* Metric cards */
     .metric-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: #f0f4f8;
         padding: 2rem;
         border-radius: 20px;
         text-align: center;
@@ -235,7 +258,7 @@ def load_custom_css():
     .skill-badge {
         display: inline-block;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: #f0f4f8;
         padding: 0.6rem 1.2rem;
         border-radius: 25px;
         margin: 0.4rem;
@@ -394,21 +417,21 @@ def main():
     st.markdown("""
     <div class="main-header">
         <h1>🚀 Resume Parser AI</h1>
-        <p style="font-size: 1.3rem; margin-top: 1rem; font-weight: 300; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+        <p style="font-size: 1.3rem; margin-top: 1rem; font-weight: 300; color: #2d3748; text-shadow: 1px 1px 2px rgba(240,244,248,0.6);">
             Intelligent Resume Analysis with Advanced NLP Technology
         </p>
         <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
             <div style="text-align: center;">
                 <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Fast Processing</div>
+                <div style="font-size: 0.9rem; color: #2d3748; font-weight: 600;">Fast Processing</div>
             </div>
             <div style="text-align: center;">
                 <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Accurate Results</div>
+                <div style="font-size: 0.9rem; color: #2d3748; font-weight: 600;">Accurate Results</div>
             </div>
             <div style="text-align: center;">
                 <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Secure & Private</div>
+                <div style="font-size: 0.9rem; color: #2d3748; font-weight: 600;">Secure & Private</div>
             </div>
         </div>
     </div>
@@ -428,11 +451,11 @@ def main():
     st.sidebar.markdown("""
     <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-top: 2rem;">
         <h4 style="color: #667eea;">✨ Features</h4>
-        <ul style="color: #666; font-size: 0.9rem;">
-            <li>Smart Resume Parsing</li>
-            <li>Skill Extraction</li>
-            <li>Resume Scoring</li>
-            <li>Job Matching</li>
+        <ul style="color: #2d3748; font-size: 0.9rem; margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li style="color: #2d3748; line-height: 1.6; margin: 0.3rem 0; font-weight: 500;">Smart Resume Parsing</li>
+            <li style="color: #2d3748; line-height: 1.6; margin: 0.3rem 0; font-weight: 500;">Skill Extraction</li>
+            <li style="color: #2d3748; line-height: 1.6; margin: 0.3rem 0; font-weight: 500;">Resume Scoring</li>
+            <li style="color: #2d3748; line-height: 1.6; margin: 0.3rem 0; font-weight: 500;">Job Matching</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)

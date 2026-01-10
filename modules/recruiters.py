@@ -80,7 +80,7 @@ def process_recruiters_mode():
     st.markdown("""
     <div style="text-align: center; padding: 2rem 0;">
         <h1 style="color: #667eea; font-size: 2.5rem; margin-bottom: 0.5rem;">💼 Recruiter's Panel</h1>
-        <p style="color: #666; font-size: 1.2rem;">Find the perfect candidates for your job openings</p>
+        <p style="color: #2d3748; font-size: 1.2rem; font-weight: 500;">Find the perfect candidates for your job openings</p>
     </div>
     """, unsafe_allow_html=True)
 

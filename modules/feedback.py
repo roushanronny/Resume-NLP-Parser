@@ -6,7 +6,7 @@ def process_feedback_mode():
     st.markdown("""
     <div style="text-align: center; padding: 2rem 0;">
         <h1 style="color: #667eea; font-size: 2.5rem; margin-bottom: 0.5rem;">💬 Feedback Section</h1>
-        <p style="color: #666; font-size: 1.2rem;">We value your opinion! Help us improve</p>
+        <p style="color: #2d3748; font-size: 1.2rem; font-weight: 500;">We value your opinion! Help us improve</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -35,12 +35,12 @@ def process_feedback_mode():
     st.markdown("---")
     st.markdown("""
     <div class="info-card">
-        <h4>💡 What kind of feedback are we looking for?</h4>
-        <ul>
-            <li>✨ Feature suggestions</li>
-            <li>🐛 Bug reports</li>
-            <li>💡 Ideas for improvement</li>
-            <li>⭐ General comments</li>
+        <h4 style="color: #667eea;">💡 What kind of feedback are we looking for?</h4>
+        <ul style="color: #2d3748; margin: 1rem 0; padding-left: 2rem;">
+            <li style="color: #2d3748; font-size: 1rem; line-height: 1.8; margin: 0.5rem 0; font-weight: 500;">✨ Feature suggestions</li>
+            <li style="color: #2d3748; font-size: 1rem; line-height: 1.8; margin: 0.5rem 0; font-weight: 500;">🐛 Bug reports</li>
+            <li style="color: #2d3748; font-size: 1rem; line-height: 1.8; margin: 0.5rem 0; font-weight: 500;">💡 Ideas for improvement</li>
+            <li style="color: #2d3748; font-size: 1rem; line-height: 1.8; margin: 0.5rem 0; font-weight: 500;">⭐ General comments</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
