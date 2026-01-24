@@ -246,3 +246,4 @@ git push heroku main
 
 **Summary:** यह एक **Streamlit-based full-stack application** है जहाँ frontend और backend एक ही Python codebase में हैं। Streamlit Cloud पर deploy करना सबसे आसान और best option है!
 
+
